@@ -1,0 +1,2 @@
+espn_api>=0.39
+# twilio>=9.0   # only if NOTIFY_METHOD=twilio
