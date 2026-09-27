@@ -40,7 +40,7 @@ jobs:
           ESPN_SWID: ${{ secrets.ESPN_SWID }}
           NOTIFY_METHOD: ntfy
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          TIMEZONE: America/Chicago
+          TIMEZONE: America/Los_Angeles
 
       - uses: actions/cache/save@v4
         if: always()
