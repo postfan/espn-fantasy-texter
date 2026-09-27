@@ -1,0 +1,49 @@
+name: Fantasy texter
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # every 10 min (GitHub may delay runs a few minutes)
+  workflow_dispatch:
+    inputs:
+      test:
+        description: "Send the current score right now"
+        type: boolean
+        default: false
+
+concurrency: fantasy-texter
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      # Remember the last-seen player statuses between runs
+      - uses: actions/cache/restore@v4
+        with:
+          path: state.json
+          key: texter-state-${{ github.run_id }}
+          restore-keys: texter-state-
+
+      - name: Check ESPN and notify
+        run: python fantasy_texter.py ${{ inputs.test && '--test' || '' }}
+        env:
+          ESPN_LEAGUE_ID: ${{ secrets.ESPN_LEAGUE_ID }}
+          ESPN_TEAM_ID: ${{ secrets.ESPN_TEAM_ID }}
+          ESPN_S2: ${{ secrets.ESPN_S2 }}
+          ESPN_SWID: ${{ secrets.ESPN_SWID }}
+          NOTIFY_METHOD: ntfy
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          TIMEZONE: America/Los_Angeles
+
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: state.json
+          key: texter-state-${{ github.run_id }}
